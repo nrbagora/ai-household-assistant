@@ -4,8 +4,11 @@ import axios from "axios";
 export default function App() {
   const [message, setMessage] = useState("");
   const [tasks, setTasks] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("All");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const categories = ["All", "Groceries", "Cleaning", "Bills", "General"];
 
   const fetchTasks = async () => {
     try {
@@ -24,11 +27,9 @@ export default function App() {
     setError("");
 
     try {
-      const res = await axios.post("http://localhost:5001/ai", {
+      await axios.post("http://localhost:5001/ai", {
         message: message.trim(),
       });
-
-      console.log("AI RESPONSE:", res.data);
 
       setMessage("");
       await fetchTasks();
@@ -49,6 +50,7 @@ export default function App() {
     await axios.put(`http://localhost:5001/tasks/${task._id}`, {
       completed: !task.completed,
     });
+
     await fetchTasks();
   };
 
@@ -63,6 +65,16 @@ export default function App() {
 
   const activeTasks = tasks.filter((task) => !task.completed);
   const completedTasks = tasks.filter((task) => task.completed);
+
+  const filteredActiveTasks =
+    selectedCategory === "All"
+      ? activeTasks
+      : activeTasks.filter((task) => task.category === selectedCategory);
+
+  const getCategoryCount = (category) => {
+    if (category === "All") return tasks.length;
+    return tasks.filter((task) => task.category === category).length;
+  };
 
   const formatDate = (date) => {
     if (!date) return null;
@@ -85,7 +97,6 @@ export default function App() {
 
           <div className="flex gap-3 text-xs text-gray-500 mt-1">
             <span>{task.category || "General"}</span>
-
             {task.dueDate && <span>Due: {formatDate(task.dueDate)}</span>}
           </div>
         </div>
@@ -102,89 +113,119 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-white text-black">
-      <div className="max-w-4xl mx-auto px-8 py-10">
-        <div className="mb-10">
-          <h1 className="text-4xl font-semibold tracking-tight">
-            AI Household Assistant
-          </h1>
-          <p className="text-gray-500 mt-2">
-            Add household tasks, track completion, and organize your list.
-          </p>
-        </div>
+      <div className="max-w-7xl mx-auto px-8 py-10">
+        <div className="flex gap-12">
+          {/* SIDEBAR */}
+          <aside className="w-60 shrink-0 border-r border-gray-100 pr-6">
+            <h2 className="text-sm font-semibold text-gray-500 mb-4">
+              Categories
+            </h2>
 
-        <div className="flex gap-3 mb-3">
-          <input
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") sendMessage();
-            }}
-            placeholder="Add a task..."
-            className="flex-1 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-black"
-          />
-
-          <button
-            onClick={sendMessage}
-            disabled={loading}
-            className="bg-black text-white px-6 py-3 rounded-xl disabled:opacity-50"
-          >
-            {loading ? "Adding..." : "Send"}
-          </button>
-        </div>
-
-        {error && (
-          <p className="text-sm text-red-500 mb-6">
-            {error}
-          </p>
-        )}
-
-        <div className="grid grid-cols-3 gap-4 mb-10 mt-8">
-          <div className="border border-gray-200 rounded-xl p-4">
-            <p className="text-gray-500 text-sm">Total</p>
-            <p className="text-2xl font-semibold">{tasks.length}</p>
-          </div>
-
-          <div className="border border-gray-200 rounded-xl p-4">
-            <p className="text-gray-500 text-sm">Active</p>
-            <p className="text-2xl font-semibold">{activeTasks.length}</p>
-          </div>
-
-          <div className="border border-gray-200 rounded-xl p-4">
-            <p className="text-gray-500 text-sm">Completed</p>
-            <p className="text-2xl font-semibold">{completedTasks.length}</p>
-          </div>
-        </div>
-
-        <div className="mb-10">
-          <h2 className="text-xl font-semibold mb-4">Tasks</h2>
-
-          {activeTasks.length === 0 ? (
-            <div className="border border-gray-200 rounded-xl p-6 text-gray-400">
-              No active tasks
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {activeTasks.map((task) => (
-                <TaskCard key={task._id} task={task} />
+            <div className="space-y-1">
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  onClick={() => setSelectedCategory(category)}
+                  className={`w-full flex justify-between items-center text-left px-3 py-2 rounded-lg transition ${
+                    selectedCategory === category
+                      ? "bg-black text-white"
+                      : "hover:bg-gray-100 text-gray-700"
+                  }`}
+                >
+                  <span>{category}</span>
+                  <span className="text-xs opacity-70">
+                    {getCategoryCount(category)}
+                  </span>
+                </button>
               ))}
             </div>
-          )}
-        </div>
+          </aside>
 
-        <div>
-          <h2 className="text-xl font-semibold mb-4">Completed</h2>
+          {/* MAIN */}
+          <main className="flex-1">
+            <div className="mb-10">
+              <h1 className="text-4xl font-semibold tracking-tight">
+                AI Household Assistant
+              </h1>
 
-          {completedTasks.length === 0 ? (
-            <div className="border border-gray-200 rounded-xl p-6 text-gray-400">
-              No completed tasks
+              <p className="text-gray-500 mt-2">
+                Add household tasks, track completion, and organize your list.
+              </p>
             </div>
-          ) : (
-            <div className="space-y-3">
-              {completedTasks.map((task) => (
-                <TaskCard key={task._id} task={task} completed />
-              ))}
+
+            <div className="flex gap-3 mb-3">
+              <input
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") sendMessage();
+                }}
+                placeholder="Add a task..."
+                className="flex-1 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-black"
+              />
+
+              <button
+                onClick={sendMessage}
+                disabled={loading}
+                className="bg-black text-white px-6 py-3 rounded-xl disabled:opacity-50"
+              >
+                {loading ? "Adding..." : "Send"}
+              </button>
             </div>
-          )}
+
+            {error && <p className="text-sm text-red-500 mb-6">{error}</p>}
+
+            <div className="grid grid-cols-3 gap-4 mb-10 mt-8">
+              <div className="border border-gray-200 rounded-xl p-4">
+                <p className="text-gray-500 text-sm">Total</p>
+                <p className="text-2xl font-semibold">{tasks.length}</p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-4">
+                <p className="text-gray-500 text-sm">Active</p>
+                <p className="text-2xl font-semibold">{activeTasks.length}</p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-4">
+                <p className="text-gray-500 text-sm">Completed</p>
+                <p className="text-2xl font-semibold">{completedTasks.length}</p>
+              </div>
+            </div>
+
+            <div className="mb-10">
+              <h2 className="text-xl font-semibold mb-4">
+                {selectedCategory === "All" ? "Tasks" : `${selectedCategory} Tasks`}
+              </h2>
+
+              {filteredActiveTasks.length === 0 ? (
+                <div className="border border-gray-200 rounded-xl p-6 text-gray-400">
+                  No active tasks
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {filteredActiveTasks.map((task) => (
+                    <TaskCard key={task._id} task={task} />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <h2 className="text-xl font-semibold mb-4">Completed</h2>
+
+              {completedTasks.length === 0 ? (
+                <div className="border border-gray-200 rounded-xl p-6 text-gray-400">
+                  No completed tasks
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {completedTasks.map((task) => (
+                    <TaskCard key={task._id} task={task} completed />
+                  ))}
+                </div>
+              )}
+            </div>
+          </main>
         </div>
       </div>
     </div>
