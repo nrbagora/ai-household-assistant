@@ -39,17 +39,11 @@ A full-stack task management application that allows users to create, organize, 
 * Git
 * GitHub
 
-## Screenshots
+## Application Preview
 
 ### Dashboard
 
 <img width="1512" height="771" alt="Screenshot 2026-06-18 at 4 59 24 PM" src="https://github.com/user-attachments/assets/5a2ffbd5-c6c5-4ee6-bfad-a9bd08036f6b" />
-
-
-### Category Filtering
-
-<img width="1512" height="781" alt="Screenshot 2026-06-18 at 5 02 58 PM" src="https://github.com/user-attachments/assets/2f8f41f5-dbf0-4e1a-ac12-2d397c39bda5" />
-
 
 
 ## Project Structure
