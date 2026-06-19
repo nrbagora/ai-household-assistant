@@ -48,7 +48,7 @@ A full-stack task management application that allows users to create, organize, 
 
 ### Category Filtering
 
-<img width="1512" height="777" alt="Screenshot 2026-06-18 at 4 59 49 PM" src="https://github.com/user-attachments/assets/9da0b5e3-752d-4fc9-bace-b7b87d043fd1" />
+<img width="1512" height="771" alt="Screenshot 2026-06-18 at 4 59 24 PM" src="https://github.com/user-attachments/assets/9b5e5667-44e4-4427-91d2-cf8fdefbecd4" />
 
 
 ## Project Structure
